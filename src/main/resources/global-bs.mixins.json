@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "package": "wta.mc.sh.p.global_bs.mixins.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "StateDefinitionMixin",
+    "StateDefinitionMixin$StateDefBuilderMixin",
+    "StateDefinitionMixin$StateHolderMixin",
+    "globalBSPart.BlockStateBaseMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "client": [
+    "BakersMixin$SimpleInstantiateMixin",
+    "BSParserFixers$Multipart1ConditionFixer",
+    "BSParserFixers$Variant1ConditionFixer"
+  ],
+  "mixinextras": {
+    "minVersion": "0.5.4"
+  }
+}

@@ -1,0 +1,13 @@
+accessWidener v2 official
+
+accessible method net/minecraft/world/level/block/state/StateDefinition$Builder validateProperty (Lnet/minecraft/world/level/block/state/properties/Property;)V
+accessible field net/minecraft/world/level/block/state/StateDefinition$Builder properties Ljava/util/Map;
+accessible method net/minecraft/world/level/block/state/StateHolder valueIndex (Lnet/minecraft/world/level/block/state/properties/Property;)I
+extendable method net/minecraft/world/level/block/state/StateHolder valueIndex (Lnet/minecraft/world/level/block/state/properties/Property;)I
+accessible field net/minecraft/world/level/block/state/StateHolder propertyKeys [Lnet/minecraft/world/level/block/state/properties/Property;
+accessible method net/minecraft/world/level/block/state/StateHolder getNullableValue (Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;
+extendable method net/minecraft/world/level/block/state/StateHolder getNullableValue (Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;
+accessible field net/minecraft/world/level/block/state/StateDefinition$Builder owner Ljava/lang/Object;
+extendable class net/minecraft/world/level/block/state/properties/EnumProperty
+accessible method net/minecraft/world/level/block/state/properties/EnumProperty <init> (Ljava/lang/String;Ljava/lang/Class;Ljava/util/List;)V
+accessible field net/minecraft/client/renderer/block/dispatch/BlockStateModelDispatcher LOGGER Lorg/slf4j/Logger;

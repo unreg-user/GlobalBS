@@ -1,0 +1,117 @@
+
+
+		@Definition(id = "getProperty", method = "getProperty")
+		@Definition(id = "prop", local = @Local(type = Property.class, name = "property"))
+		@Expression("prop = ?.getProperty(?)")
+		@Inject(
+			  method = "instantiate(Lnet/minecraft/world/level/block/state/StateDefinition;Ljava/lang/String;Lnet/minecraft/client/renderer/block/dispatch/multipart/KeyValueCondition$Terms;)Ljava/util/function/Predicate;",
+			  at = @At(
+					value = "MIXINEXTRAS:EXPRESSION",
+					args = "tail=true"
+			  )
+		)
+		private static void facingPropertyFix(
+			  StateDefinition<?, ?> definition,
+			  String key,
+			  KeyValueCondition.Terms valueTest,
+			  CallbackInfoReturnable<Predicate<?>> cir,
+			  @Local(name = "property") Property<?> property){
+			if ("facing".equals(key), )
+		}
+
+	private record UnregToFactoryAdder<O, S extends StateHolder<O, S>>(StateDefinition.Factory<O, S> factory, PropertyUnregistry unregistry) implements StateDefinition.Factory<O, S> {
+		@Override
+		public @NonNull S create(@NonNull O type, Property<?> @NonNull [] propertyKeys, Comparable<?> @NonNull [] propertyValues) {
+			S orig = factory.create(type, propertyKeys, propertyValues);
+			((HasUnregistryFI) orig).global_bs$setUnregistry(unregistry);
+			return orig;
+		}
+	}
+		/*@WrapOperation(
+			  method = "predicate",
+			  at = @At(value = "INVOKE", target = "Ljava/lang/String;isEmpty()Z"))
+		private static <O, S extends StateHolder<O, S>> boolean facingPropertyFix(
+			  String instance,
+			  Operation<Boolean> original,
+			  @Local(name = "stateDefinition", argsOnly = true) StateDefinition<O, S> stateDefinition,
+			  @Local(name = "property") Property<?> property) {
+			if (stateDefinition.getOwner() instanceof Block) {
+				if ((property == null && "facing".equals(instance)) || "axis".equals(instance)) {
+					return true;
+				}
+			}
+			return original.call(instance);
+		}**/
+
+
+		@WrapOperation(
+			  method = "predicate",
+			  at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/StateDefinition;getProperty(Ljava/lang/String;)Lnet/minecraft/world/level/block/state/properties/Property;"))
+		private static @Nullable <O, S extends StateHolder<O, S>> Property<?> anyFix1(StateDefinition<O, S> instance, String name, Operation<Property<?>> original) {
+			var unregetProp = ((HasUnregetPropsFI) instance).global_bs$getUnregedProps().get(name);
+			if (unregetProp != null) {
+				var unregistry = ((HasUnregistryFI) instance).global_bs$getUnregistry();
+				var newValue = unregistry.REPLACES.get(unregetProp);
+				if (newValue != null) {
+					//var defaultValue = unregistry.ALL_PROP_REG_TO_SER_DEFAULT.get(newValue);
+					//var thisValue = newValue.getValue();
+				}
+				return NilProperty.INSTANCE;
+			}
+			return original.call(instance, name);
+		}
+
+		@Expression("? != null")
+		@ModifyVariable(
+			  method = "predicate",
+			  at = @At(
+					value = "MIXINEXTRAS:EXPRESSION",
+					ordinal = 0
+			  ),
+			  name = "propertyName")
+		private static <O, S extends StateHolder<O, S>> String anyFix4(String propertyName, @Local(name = "property") Property<?> property) {
+			if (property == NilProperty.INSTANCE) {
+				return NilProperty.NIL_PROPERTY_USENAME;
+			}
+			return propertyName;
+		}
+
+		@Expression("? != null")
+		@WrapOperation(
+			  method = "predicate",
+			  at = @At(
+					value = "MIXINEXTRAS:EXPRESSION",
+				    ordinal = 0
+			  ))
+		private static <O, S extends StateHolder<O, S>> boolean anyFix3(Object left, Object right, Operation<Boolean> original) {
+			if (left == NilProperty.INSTANCE) {
+				return true;
+			}
+			return original.call(left, right);
+		}
+
+		@WrapOperation(
+			  method = "predicate",
+			  at = @At(value = "INVOKE", target = "Ljava/lang/String;isEmpty()Z"))
+		private static <O, S extends StateHolder<O, S>> boolean anyFix2(
+			  String instance, Operation<Boolean> original, @Local(name = "stateDefinition", argsOnly = true) StateDefinition<O, S> stateDefinition) {
+			if (NilProperty.NIL_PROPERTY_USENAME.equals(instance)) {
+				return true;
+			}
+			return original.call(instance);
+		}
+
+		@WrapOperation(
+			  method = "predicate",
+			  at = @At(value = "NEW", target = "()Ljava/util/HashMap;")
+		)
+		private static <O, S extends StateHolder<O, S>> HashMap<Property<?>, Comparable<?>> customPropertiesFix(
+			  Operation<HashMap<Property<?>, Comparable<?>>> original,
+			  @Local(name = "stateDefinition", argsOnly = true) StateDefinition<O, S> stateDefinition) {
+			var map = original.call();
+			map.putAll(((HasUnregistryFI) stateDefinition).global_bs$getUnregistry().ALL_PROP_REG_TO_SER_DEFAULT);
+			return map;
+		}
+	//@ApiStatus.Internal
+	//public final List<UnregPropHandler<?>> UNREGISTERED = new ArrayList<>();
+		//UNREGISTERED.add(propHandler);
