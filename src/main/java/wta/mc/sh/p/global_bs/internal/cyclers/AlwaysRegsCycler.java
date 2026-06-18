@@ -1,17 +1,17 @@
-package wta.mc.sh.p.global_bs.internal;
+package wta.mc.sh.p.global_bs.internal.cyclers;
 
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.List;
 
-public class AllRegCycler {
+public class AllRegCycler<O, S extends StateHolder<O, S>> implements AllRegCyclerI<O, S> {
 	private final List<Property<?>> properties;
 	private final short[] sizes;
 	private final short[] stateList;
-	private BlockState state;
+	private S state;
 
-	public AllRegCycler(List<Property<?>> properties, BlockState state) {
+	public AllRegCycler(List<Property<?>> properties, S state) {
 		this.state = state;
 		this.properties = properties;
 
@@ -23,20 +23,13 @@ public class AllRegCycler {
 		stateList = new short[size];
 	}
 
-	public BlockState cycle() {
+	@Override
+	public StateHolder<O, S> cycle() {
 		add(0);
 		return state;
 	}
 
-	public int getInterCount() {
-		int result = 1;
-		for (short size : sizes) {
-			result *= size;
-		}
-		return result;
-	}
-
-	public void add(int index) {
+	private void add(int index) {
 		if (index < sizes.length) {
 			short newState = (short) (stateList[index] + 1);
 			state = state.cycle(properties.get(index));

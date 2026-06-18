@@ -4,6 +4,9 @@ import com.mojang.math.OctahedralGroup;
 import com.mojang.math.Quadrant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,24 +44,16 @@ public class DirectionCMath {
 		return new RotateByQuadrants(x, y, z);
 	}
 
-	public static RotateByQuadrants getRBQFor(Direction direction, Direction horizontal){
-		return GET_RBQ_FOR_CACHE[direction.get3DDataValue()][horizontal.get2DDataValue()];
-	}
-
-	public static OctahedralGroup getOctahedralFor(Direction direction, Direction horizontal){
-		return GET_OCTAHEDRAL_FOR_CACHE[direction.get3DDataValue()][horizontal.get2DDataValue()];
-	}
-
-	public static Quadrant applyQuadrants(Quadrant q1, Quadrant q2){
-		return Quadrant.values()[((q1.shift + q2.shift) % 4)];
-	}
-
-	public static OctahedralGroup getOctahedral(Quadrant x, Quadrant y, Quadrant z){
+	public static OctahedralGroup getOctahedralFromQuadrants(Quadrant x, Quadrant y, Quadrant z){
 		return x.rotationX.compose(y.rotationY).compose(z.rotationZ);
 	}
 
 	public static Rotate2DirInfo getRotate2DirInfo(Direction direction, Direction horizontal){
 		return new Rotate2DirInfo(direction.get3DDataValue(), horizontal.get2DDataValue());
+	}
+
+	public static Rotate2DirInfo getRotate2DirInfoForState(StateHolder<Block, BlockState> state){
+		return new Rotate2DirInfo(state.getValue(GlobalBSPart.FACING_GLOBAL).get3DDataValue(), state.getValue(GlobalBSPart.HORIZONTAL_FACING_GLOBAL).get2DDataValue());
 	}
 
 	static {
@@ -67,7 +62,7 @@ public class DirectionCMath {
 			for (var x : Quadrant.values()) {
 				for (var y : Quadrant.values()) {
 					for (var z : Quadrant.values()) {
-						map.put(getOctahedral(x, y, z), new RotateByQuadrants(x, y, z));
+						map.put(getOctahedralFromQuadrants(x, y, z), new RotateByQuadrants(x, y, z));
 					}
 				}
 			}
@@ -91,7 +86,7 @@ public class DirectionCMath {
 	public record Rotate2DirInfo(int dir, int hor) {
 		public Variant apply(Variant variant) {
 			var state = variant.modelState();
-			var origOctahedral = DirectionCMath.getOctahedral(state.x(), state.y(), state.z());
+			var origOctahedral = DirectionCMath.getOctahedralFromQuadrants(state.x(), state.y(), state.z());
 			var customOctahedral = DirectionCMath.GET_OCTAHEDRAL_FOR_CACHE[dir][hor];
 			var resultRBQ = DirectionCMath.GET_RBQ_BY_OCTAHEDRAL_CACHE.get(origOctahedral.compose(customOctahedral));
 
@@ -102,11 +97,19 @@ public class DirectionCMath {
 				  state.uvLock()
 			));
 		}
+
+		public RotateByQuadrants getRBQ(){
+			return GET_RBQ_FOR_CACHE[dir][hor];
+		}
+
+		public OctahedralGroup getOctahedral(){
+			return GET_OCTAHEDRAL_FOR_CACHE[dir][hor];
+		}
 	}
 
 	public record RotateByQuadrants(Quadrant x, Quadrant y, Quadrant z) {
 		OctahedralGroup getOctahedral(){
-			return DirectionCMath.getOctahedral(x, y, z);
+			return DirectionCMath.getOctahedralFromQuadrants(x, y, z);
 		}
 	}
 }

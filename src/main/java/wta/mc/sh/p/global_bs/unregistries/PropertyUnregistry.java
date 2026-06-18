@@ -12,9 +12,9 @@ import wta.mc.sh.p.global_bs.internal.AllRegCycler;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class PropertyUnregistry {
-	private static final HashMap<Class<?>, PropertyUnregistry> UNREG_MAP = new HashMap<>();
-	private static final List<FastGetterInfo> FAST_IMPL_UNREG_GETTERS = new ArrayList<>();
+public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
+	private static final HashMap<Class<?>, PropertyUnregistry<?, ?>> UNREG_MAP = new HashMap<>();
+	private static final List<FastGetterInfo<?, ?>> FAST_IMPL_UNREG_GETTERS = new ArrayList<>();
 
 	// Internal
 	@ApiStatus.Internal
@@ -39,19 +39,19 @@ public class PropertyUnregistry {
 
 	public static void addUnregistriesFor(Class<?>... parents) {
 		for (var clazz : parents) {
-			UNREG_MAP.put(clazz, new PropertyUnregistry());
+			UNREG_MAP.put(clazz, new PropertyUnregistry<>());
 		}
 	}
 
-	public static void addUnregistriesFor(PropUnregAddInfo<?>... parentsInfo) {
+	public static void addUnregistriesFor(PropUnregAddInfo<?, ?>... parentsInfo) {
 		for (var info : parentsInfo) {
 			var unregistry = info.unregistry;
 			UNREG_MAP.put(info.clazz, unregistry);
-			FAST_IMPL_UNREG_GETTERS.add(new FastGetterInfo(info.impl_predicate, unregistry));
+			FAST_IMPL_UNREG_GETTERS.add(new FastGetterInfo<>(info.impl_predicate, unregistry));
 		}
 	}
 
-	public static <T> PropertyUnregistry getForSubclass(T state) {
+	public static PropertyUnregistry<?, ?> getForSubclass(Object state) {
 		for (var i : FAST_IMPL_UNREG_GETTERS) {
 			if (i.predicate.test(state)) {
 				return i.unregistry;
@@ -60,7 +60,7 @@ public class PropertyUnregistry {
 		return getForSubclass(state.getClass());
 	}
 
-	public static PropertyUnregistry getForSubclass(Class<?> stateClazz) {
+	public static PropertyUnregistry<?, ?> getForSubclass(Class<?> stateClazz) {
 		for (var i : UNREG_MAP.entrySet()) {
 			if (i.getKey().isAssignableFrom(stateClazz)) {
 				return i.getValue();
@@ -69,11 +69,11 @@ public class PropertyUnregistry {
 		throw new UnregistryException("No parent class for " + stateClazz + " in UNREG_MAP");
 	}
 
-	public static PropertyUnregistry getOrCreateFor(Class<?> stateClazz) {
-		return UNREG_MAP.computeIfAbsent(stateClazz, _ -> new PropertyUnregistry());
+	public static PropertyUnregistry<?, ?> getOrCreateFor(Class<?> stateClazz) {
+		return UNREG_MAP.computeIfAbsent(stateClazz, _ -> new PropertyUnregistry<>());
 	}
 
-	public static PropertyUnregistry getFor(Class<?> stateClazz) {
+	public static PropertyUnregistry<?, ?> getFor(Class<?> stateClazz) {
 		return Objects.requireNonNull(UNREG_MAP.get(stateClazz));
 	}
 
@@ -107,8 +107,12 @@ public class PropertyUnregistry {
 	}
 
 	@ApiStatus.Internal
-	public AllRegCycler getAllRegCycler(BlockState state) {
-		return new AllRegCycler(REGISTERED_FOR_ALL, state);
+	public AllRegCycler<O, S> getAllRegCycler(S state) {
+		return new AllRegCycler<>(REGISTERED_FOR_ALL, state);
+	}
+
+	public BlockState getAllRegDefault(BlockState state){
+		return
 	}
 
 	// Nil Property
@@ -179,10 +183,10 @@ public class PropertyUnregistry {
 	}
 
 	// Other
-	public record PropUnregAddInfo<T>(PropertyUnregistry unregistry, Class<T> clazz, Predicate<Object> impl_predicate) {
+	public record PropUnregAddInfo<O, S extends StateHolder<O, S>>(PropertyUnregistry<O, S> unregistry, Class<O> clazz, Predicate<Object> impl_predicate) {
 	}
 
-	private record FastGetterInfo(Predicate<Object> predicate, PropertyUnregistry unregistry) {
+	private record FastGetterInfo<O, S extends StateHolder<O, S>>(Predicate<Object> predicate, PropertyUnregistry<O, S> unregistry) {
 	}
 
 	@ApiStatus.Internal
