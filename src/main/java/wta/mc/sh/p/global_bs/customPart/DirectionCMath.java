@@ -1,4 +1,4 @@
-package wta.mc.sh.p.global_bs.globalBSPart;
+package wta.mc.sh.p.global_bs.customPart;
 
 import com.mojang.math.OctahedralGroup;
 import com.mojang.math.Quadrant;
@@ -7,6 +7,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +55,7 @@ public class DirectionCMath {
 	}
 
 	public static Rotate2DirInfo getRotate2DirInfoForState(StateHolder<Block, BlockState> state){
-		return new Rotate2DirInfo(state.getValue(GlobalBSPart.FACING_GLOBAL).get3DDataValue(), state.getValue(GlobalBSPart.HORIZONTAL_FACING_GLOBAL).get2DDataValue());
+		return new Rotate2DirInfo(state.getValue(CustomPart.FACING_GLOBAL).get3DDataValue(), state.getValue(CustomPart.HORIZONTAL_FACING_GLOBAL).get2DDataValue());
 	}
 
 	static {

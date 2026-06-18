@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import wta.mc.sh.p.global_bs.globalBSPart.GlobalBSPart;
-import wta.mc.sh.p.global_bs.PropertyUnregistry;
+import wta.mc.sh.p.global_bs.customPart.CustomPart;
+import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry;
 import wta.mc.sh.p.global_bs.mixins.intefaces.HasUnregetPropsFI;
 import wta.mc.sh.p.global_bs.mixins.intefaces.HasUnregistryFI;
 
@@ -25,31 +25,32 @@ import java.util.function.Function;
 
 @SuppressWarnings({"unused"})
 @Mixin(StateDefinition.class)
-public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> implements HasUnregistryFI, HasUnregetPropsFI {
+public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> implements HasUnregistryFI<O, S>, HasUnregetPropsFI {
 	@Shadow
 	@Final
 	private O owner;
 
 	@Unique
-	private PropertyUnregistry unregistry;
+	private PropertyUnregistry<O, S> unregistry;
 
 	@Unique
 	private Map<String, Property<?>> unregedProps = new HashMap<>();
 
+	@SuppressWarnings("unchecked")
 	@Inject(
 		  method = "<init>",
 		  at = @At("TAIL"))
 	public void initFix(Function<O, S> defaultState, O owner, StateDefinition.Factory<O, S> factory, Map<String, Property<?>> properties, CallbackInfo ci) {
-		unregistry = PropertyUnregistry.getForSubclass(owner);
+		unregistry = (PropertyUnregistry<O, S>) PropertyUnregistry.getForSubclass(owner);
 	}
 
 	@Override
-	public void global_bs$setUnregistry(PropertyUnregistry unregistry) {
+	public void global_bs$setUnregistry(PropertyUnregistry<O, S> unregistry) {
 		this.unregistry = unregistry;
 	}
 
 	@Override
-	public PropertyUnregistry global_bs$getUnregistry() {
+	public PropertyUnregistry<O, S> global_bs$getUnregistry() {
 		return unregistry;
 	}
 
@@ -67,20 +68,21 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 		  method = "<clinit>",
 		  at = @At("TAIL"))
 	private static void initUnregs(CallbackInfo ci) {
-		GlobalBSPart.init();
+		CustomPart.init();
 	}
 
 	@Mixin(StateHolder.class)
-	public abstract static class StateHolderMixin<O, S> implements HasUnregistryFI {
+	public abstract static class StateHolderMixin<O, S extends StateHolder<O, S>> implements HasUnregistryFI<O, S> {
 		@Unique
-		private PropertyUnregistry unregistry;
+		private PropertyUnregistry<O, S> unregistry;
 
+		@SuppressWarnings("unchecked")
 		@Inject(
 			  method = "<init>",
 			  at = @At("TAIL")
 		)
 		public void initFix(Object owner, Property<?>[] propertyKeys, Comparable<?>[] propertyValues, CallbackInfo ci) {
-			unregistry = PropertyUnregistry.getForSubclass(owner);
+			unregistry = (PropertyUnregistry<O, S>) PropertyUnregistry.getForSubclass(owner);
 		}
 
 		@ModifyVariable(
@@ -88,7 +90,7 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 			  at = @At("HEAD"),
 			  argsOnly = true, name = "property")
 		public Property<?> valueIndexFix(Property<?> property) {
-			var prop2 = unregistry.REPLACES.get(property);
+			var prop2 = unregistry.replaces.get(property);
 			if (prop2 != null) return prop2;
 			return property;
 		}
@@ -98,7 +100,7 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 			  at = @At("HEAD"),
 			  cancellable = true)
 		public void hasPropertyFix(Property<?> property, CallbackInfoReturnable<Boolean> cir) {
-			if (unregistry.ALWAYS_HAS_PROPERTY.contains(property)) cir.setReturnValue(true);
+			if (unregistry.alwaysHasProperty.contains(property)) cir.setReturnValue(true);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -107,7 +109,7 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 			  at = @At("HEAD"),
 			  cancellable = true)
 		public <T extends Comparable<T>, V extends T> void setValueFix(Property<T> property, V value, CallbackInfoReturnable<S> cir) {
-			var handler = (PropertyUnregistry.UnregisteredValueHandler<T>) unregistry.UNREG_VALUE_HANDLERS.get(property);
+			var handler = (PropertyUnregistry.UnregisteredGettingValueHandler<T>) unregistry.unregsGettingValueHandlers.get(property);
 			if (handler != null) cir.setReturnValue(handler.setValue((StateHolder<O, S>) (Object) this, value));
 		}
 
@@ -117,17 +119,17 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 			  at = @At("HEAD"),
 			  cancellable = true)
 		public <T extends Comparable<T>, V extends T> void getNullableValueFix(Property<T> property, CallbackInfoReturnable<T> cir) {
-			var handler = (PropertyUnregistry.UnregisteredValueHandler<T>) unregistry.UNREG_VALUE_HANDLERS.get(property);
+			var handler = (PropertyUnregistry.UnregisteredGettingValueHandler<T>) unregistry.unregsGettingValueHandlers.get(property);
 			if (handler != null) cir.setReturnValue(handler.getNullableValue((StateHolder<O, S>) (Object) this));
 		}
 
 		@Override
-		public void global_bs$setUnregistry(PropertyUnregistry unregistry) {
+		public void global_bs$setUnregistry(PropertyUnregistry<O, S> unregistry) {
 			this.unregistry = unregistry;
 		}
 
 		@Override
-		public PropertyUnregistry global_bs$getUnregistry() {
+		public PropertyUnregistry<O, S> global_bs$getUnregistry() {
 			return unregistry;
 		}
 
@@ -135,12 +137,12 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 			  method = "<clinit>",
 			  at = @At("TAIL"))
 		private static void initUnregs(CallbackInfo ci) {
-			GlobalBSPart.init();
+			CustomPart.init();
 		}
 	}
 
 	@Mixin(StateDefinition.Builder.class)
-	public abstract static class StateDefBuilderMixin<O, S extends StateHolder<O, S>> implements HasUnregistryFI, HasUnregetPropsFI {
+	public abstract static class StateDefBuilderMixin<O, S extends StateHolder<O, S>> implements HasUnregistryFI<O, S>, HasUnregetPropsFI {
 		@Shadow
 		@Final
 		public Map<String, Property<?>> properties;
@@ -149,14 +151,15 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 		private final Map<String, Property<?>> unregedProps = new HashMap<>();
 
 		@Unique
-		private PropertyUnregistry unregistry;
+		private PropertyUnregistry<O, S> unregistry;
 
+		@SuppressWarnings("unchecked")
 		@Inject(
 			  method = "<init>",
 			  at = @At("TAIL"))
 		public void initFix(Object owner, CallbackInfo ci) {
-			unregistry = PropertyUnregistry.getForSubclass(owner);
-			for (var prop : unregistry.REGISTERED_FOR_ALL) {
+			unregistry = (PropertyUnregistry<O, S>) PropertyUnregistry.getForSubclass(owner);
+			for (var prop : unregistry.alwaysRegs) {
 				properties.put(prop.getName(), prop);
 			}
 		}
@@ -166,7 +169,7 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 			  at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
 		public Object addFix(Map<String, Property<?>> instance, Object k, Object v, Operation<?> original) {
 			var property = (Property<?>) v;
-			if (unregistry.RAW_UNREGISTERED.contains(property)) {
+			if (unregistry.rawUnregs.contains(property)) {
 				unregedProps.put((String) k, property);
 				return null;
 			} else if (property == PropertyUnregistry.NilProperty.INSTANCE) {
@@ -184,12 +187,12 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 		}
 
 		@Override
-		public void global_bs$setUnregistry(PropertyUnregistry unregistry) {
+		public void global_bs$setUnregistry(PropertyUnregistry<O, S> unregistry) {
 			this.unregistry = unregistry;
 		}
 
 		@Override
-		public PropertyUnregistry global_bs$getUnregistry() {
+		public PropertyUnregistry<O, S> global_bs$getUnregistry() {
 			return unregistry;
 		}
 
@@ -204,7 +207,7 @@ public abstract class StateDefinitionMixin<O, S extends StateHolder<O, S>> imple
 		}
 
 		static {
-			GlobalBSPart.init();
+			CustomPart.init();
 		}
 	}
 }

@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import wta.mc.sh.p.global_bs.mixins.classes.BSDefF;
+import wta.mc.sh.p.global_bs.mixins.clazzes.BSDefF;
 
 @Mixin(Block.class)
 public class BlockMixin {

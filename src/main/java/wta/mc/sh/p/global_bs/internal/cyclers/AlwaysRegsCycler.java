@@ -5,13 +5,13 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.List;
 
-public class AllRegCycler<O, S extends StateHolder<O, S>> implements AllRegCyclerI<O, S> {
+public class AlwaysRegsCycler<O, S extends StateHolder<O, S>> implements AlwaysRegsCyclerI<O, S> {
 	private final List<Property<?>> properties;
 	private final short[] sizes;
 	private final short[] stateList;
 	private S state;
 
-	public AllRegCycler(List<Property<?>> properties, S state) {
+	public AlwaysRegsCycler(List<Property<?>> properties, S state) {
 		this.state = state;
 		this.properties = properties;
 

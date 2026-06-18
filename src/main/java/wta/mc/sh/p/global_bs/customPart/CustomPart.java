@@ -1,4 +1,4 @@
-package wta.mc.sh.p.global_bs.globalBSPart;
+package wta.mc.sh.p.global_bs.customPart;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -8,7 +8,7 @@ import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry.UnregPropHandler;
 import wta.mc.sh.p.global_bs.unregistries.BlockPropertyUnreg;
 import wta.mc.sh.p.global_bs.unregistries.PropUnregistries;
 
-public class GlobalBSPart {
+public class CustomPart {
 	public static final EnumProperty<Direction> FACING_GLOBAL;
 	public static final EnumProperty<Direction> HORIZONTAL_FACING_GLOBAL;
 

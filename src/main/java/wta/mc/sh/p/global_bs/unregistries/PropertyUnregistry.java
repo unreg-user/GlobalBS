@@ -1,13 +1,15 @@
-package wta.mc.sh.p.global_bs;
+package wta.mc.sh.p.global_bs.unregistries;
 
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NonNull;
-import wta.mc.sh.p.global_bs.internal.AllRegCycler;
+import wta.mc.sh.p.global_bs.internal.cyclers.AlwaysRegsCycler;
+import wta.mc.sh.p.global_bs.internal.cyclers.AlwaysRegsRawCycler;
+import wta.mc.sh.p.global_bs.unregistries.rawStateHolder.RawStateHolder;
+import wta.mc.sh.p.global_bs.unregistries.rawStateHolder.SeparatedRawStateHolder;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -18,30 +20,29 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 
 	// Internal
 	@ApiStatus.Internal
-	public final Set<Property<?>> RAW_UNREGISTERED = new HashSet<>();
+	public final Set<Property<?>> rawUnregs = new HashSet<>();
 	@ApiStatus.Internal
-	public final List<Property<?>> REGISTERED_FOR_ALL = new ArrayList<>();
+	public final List<Property<?>> alwaysRegs = new ArrayList<>();
+	//@ApiStatus.Internal
+	//public Predicate<StateHolder<?, ?>> ALLWAYS_REGS_DEFAULT_PREDICATE = _ -> true;
 	@ApiStatus.Internal
-	public Predicate<StateHolder<?, ?>> ALL_PROP_REG_PREDICATE = _ -> true;
+	public Map<Property<?>, Comparable<?>> defaultsUnregs = new HashMap<>();
 	@ApiStatus.Internal
-	public Map<Property<?>, Comparable<?>> DEFAULTS_UNREG = new HashMap<>();
-	@ApiStatus.Internal
-	public Map<Property<?>, Comparable<?>> DEFAULTS_ALWAYS_REG = new HashMap<>();
+	public Map<Property<?>, Comparable<?>> defaultsAlwaysRegs = new HashMap<>();
 	/**
 	 * Old -> New
 	 */
 	@ApiStatus.Internal
-	public final Map<Property<?>, Property<?>> REPLACES = new IdentityHashMap<>();
+	public final Map<Property<?>, Property<?>> replaces = new IdentityHashMap<>();
 	@ApiStatus.Internal
-	public final Set<Property<?>> ALWAYS_HAS_PROPERTY = new HashSet<>();
+	public final Set<Property<?>> alwaysHasProperty = new HashSet<>();
 	@ApiStatus.Internal
-	public final Map<Property<?>, UnregisteredValueHandler<?>> UNREG_VALUE_HANDLERS = new HashMap<>();
+	public final Map<Property<?>, UnregisteredGettingValueHandler<?>> unregsGettingValueHandlers = new HashMap<>();
+	@ApiStatus.Internal
+	public int alwaysRegsVariantsCount = 1;
 
-	public static void addUnregistriesFor(Class<?>... parents) {
-		for (var clazz : parents) {
-			UNREG_MAP.put(clazz, new PropertyUnregistry<>());
-		}
-	}
+	@ApiStatus.Internal
+	public PostInitCustomsData postCustomsInitData;
 
 	public static void addUnregistriesFor(PropUnregAddInfo<?, ?>... parentsInfo) {
 		for (var info : parentsInfo) {
@@ -77,42 +78,69 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 		return Objects.requireNonNull(UNREG_MAP.get(stateClazz));
 	}
 
-	// API
-	public <T extends Comparable<T>> void addDefaultReg(Property<T> property, T defaultValue) {
-		ALL_PROP_REG_PREDICATE = ALL_PROP_REG_PREDICATE.and(state -> state.getValue(property) == defaultValue);
-		DEFAULTS_ALWAYS_REG.put(property, defaultValue);
+	@ApiStatus.Internal
+	public static void initPostCustomsInitData() {
+		for (var i : UNREG_MAP.entrySet()) {
+			i.getValue().initPostCustomsInitDataLocal();
+		}
 	}
 
-	public <T extends Comparable<T>> void unregister(UnregPropHandler<T> propHandler) {
+	// API
+	public <T extends Comparable<T>> void addDefaultRegs(Property<T> property, T defaultValue) {
+		//ALLWAYS_REGS_DEFAULT_PREDICATE = ALLWAYS_REGS_DEFAULT_PREDICATE.and(state -> state.getValue(property) == defaultValue);
+		defaultsAlwaysRegs.put(property, defaultValue);
+	}
+
+	public <T extends Comparable<T>> void unreg(UnregPropHandler<T> propHandler) {
 		var prop = propHandler.self();
-		RAW_UNREGISTERED.add(prop);
+		rawUnregs.add(prop);
 
 		var newReplaceValue = propHandler.newReplaceValue;
-		if (newReplaceValue != null) REPLACES.put(prop, newReplaceValue);
+		if (newReplaceValue != null) replaces.put(prop, newReplaceValue);
 		var unregValueHandler = propHandler.unregValueHandler;
-		if (unregValueHandler != null) UNREG_VALUE_HANDLERS.put(prop, unregValueHandler);
+		if (unregValueHandler != null) unregsGettingValueHandlers.put(prop, unregValueHandler);
 		boolean alwaysHas = propHandler.alwaysHas;
-		if (alwaysHas) ALWAYS_HAS_PROPERTY.add(prop);
+		if (alwaysHas) alwaysHasProperty.add(prop);
 		var defaultSerValue = propHandler.defaultSerValue;
-		if (defaultSerValue != null) DEFAULTS_UNREG.put(prop, defaultSerValue);
+		if (defaultSerValue != null) defaultsUnregs.put(prop, defaultSerValue);
 	}
 
-	public <T extends Comparable<T>> Property<T> registerForAll(AllRegPropInfo<T> info) {
+	public <T extends Comparable<T>> Property<T> alwaysReg(AllRegPropInfo<T> info) {
 		var prop = info.property;
-		REGISTERED_FOR_ALL.add(prop);
+		alwaysRegs.add(prop);
 
-		addDefaultReg(prop, info.defaultSerValue);
+		addDefaultRegs(prop, info.defaultSerValue);
+		alwaysRegsVariantsCount *= (int) prop.getAllValues().count();
 
 		return prop;
 	}
 
-	@ApiStatus.Internal
-	public AllRegCycler<O, S> getAllRegCycler(S state) {
-		return new AllRegCycler<>(REGISTERED_FOR_ALL, state);
+	public AlwaysRegsCycler<O, S> getAlwaysRegsCycler(S state) {
+		return new AlwaysRegsCycler<>(alwaysRegs, state);
 	}
 
-	public BlockState getAllRegDefault(BlockState state){
-		return
+	public AlwaysRegsRawCycler<O, S> getAlwaysRegsRawCycler(RawStateHolder rawHolder) {
+		return new AlwaysRegsRawCycler<>(rawHolder.getProperties(), rawHolder.getValues(), rawHolder.computePossibleValues());
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public S setAlwaysRegsToDefault(S state){
+		for (var prop : defaultsAlwaysRegs.entrySet()) {
+			state = (S) state.setValue((Property) prop.getKey(), (Comparable) prop.getValue());
+		}
+		return state;
+	}
+
+	@ApiStatus.Internal
+	public void initPostCustomsInitDataLocal() {
+		SeparatedRawStateHolder needRawDefaultsValues;
+		{
+			var properties = alwaysRegs.toArray(count -> new Property<?>[count]);
+			@SuppressWarnings("unchecked")
+			var possibleValues = (List<Comparable<?>>[]) alwaysRegs.stream().map(prop -> prop.getAllValues().toList()).toArray(count -> new List<?>[count]);
+			needRawDefaultsValues = new SeparatedRawStateHolder(new RawStateHolder(properties, null, possibleValues), null);
+		}
+		postCustomsInitData = new PostInitCustomsData(needRawDefaultsValues);
 	}
 
 	// Nil Property
@@ -142,7 +170,8 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 	// Unregister
 	public record UnregPropHandler<T extends Comparable<T>>(Property<T> self, Property<T> newReplaceValue,
 	                                                        T defaultSerValue, boolean alwaysHas,
-	                                                        UnregisteredValueHandler<T> unregValueHandler) {
+	                                                        UnregisteredGettingValueHandler<T> unregValueHandler) {
+		@SuppressWarnings("unused")
 		public static <T extends Comparable<T>> UnregPropHandler<T> ofReplace(Property<T> self, Property<T> old, T value) {
 			return new UnregPropHandler<>(
 				  self,
@@ -158,18 +187,18 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 				  null,
 				  value,
 				  true,
-				  new UnregisteredValueHandler.OfRetValue<>(value));
+				  new UnregisteredGettingValueHandler.OfRetValue<>(value));
 		}
 	}
 
 	// Other Handlers
 	@SuppressWarnings("unchecked")
-	public interface UnregisteredValueHandler<T extends Comparable<T>> {
+	public interface UnregisteredGettingValueHandler<T extends Comparable<T>> {
 		<O, S> T getNullableValue(StateHolder<O, S> self);
 
 		<O, S> S setValue(StateHolder<O, S> self, T value);
 
-		record OfRetValue<T extends Comparable<T>>(T value) implements UnregisteredValueHandler<T> {
+		record OfRetValue<T extends Comparable<T>>(T value) implements UnregisteredGettingValueHandler<T> {
 			@Override
 			public <O, S> T getNullableValue(StateHolder<O, S> self) {
 				return value;
@@ -187,6 +216,9 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 	}
 
 	private record FastGetterInfo<O, S extends StateHolder<O, S>>(Predicate<Object> predicate, PropertyUnregistry<O, S> unregistry) {
+	}
+
+	public record PostInitCustomsData(SeparatedRawStateHolder needRawDefaultsValues) {
 	}
 
 	@ApiStatus.Internal

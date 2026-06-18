@@ -15,6 +15,7 @@
     "requireAnnotations": true
   },
   "client": [
+    "BakersMixin$MultipartUnbakedMixin",
     "BakersMixin$SimpleInstantiateMixin",
     "BSParserFixers$Multipart1ConditionFixer",
     "BSParserFixers$Variant1ConditionFixer"

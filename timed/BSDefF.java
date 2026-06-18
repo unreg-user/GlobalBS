@@ -1,4 +1,4 @@
-package wta.mc.sh.p.global_bs.mixins.classes;
+package wta.mc.sh.p.global_bs.mixins.clazzes;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;

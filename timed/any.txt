@@ -115,3 +115,31 @@
 	//@ApiStatus.Internal
 	//public final List<UnregPropHandler<?>> UNREGISTERED = new ArrayList<>();
 		//UNREGISTERED.add(propHandler);
+
+		/*@Redirect(
+			  method = "instantiate(Lnet/minecraft/world/level/block/state/StateDefinition;)Ljava/util/function/Predicate;",
+			  at = @At(value = "NEW", target = "(I)Ljava/util/ArrayList;"))
+		private static <O, S extends StateHolder<O, S>> ArrayList<Predicate<S>> customPropertiesFix(
+			  int initialCapacity,
+			  @Local(name = "definition", argsOnly = true) StateDefinition<O, S> definition) {
+			var list = new ArrayList<Predicate<S>>(initialCapacity + 1);
+			//noinspection unchecked
+			list.add((Predicate<S>) (Predicate) ((HasUnregistryFI<?, ?>) definition).global_bs$getUnregistry().ALLWAYS_REGS_DEFAULT_PREDICATE);
+			return list;
+		}*/
+		@Shadow
+        		@Final
+        		private ModelBaker.SharedOperationKey<MultiPartModel.SharedBakedState> sharedStateKey;
+
+        		/**
+        		 * @author UnregUser
+        		 * @reason adding models to custom states with nondefault always properties
+        		 */
+        		@Overwrite
+        		public BlockStateModel bake(final BlockState blockState, final ModelBaker modelBakery) {
+        			var unregistry = PropUnregistries.BLOCK_UNREG;
+        			var defaultedState = unregistry.getAlwaysRegsDefaultAndSaveOther(blockState);
+
+        			MultiPartModel.SharedBakedState shared = modelBakery.compute(this.sharedStateKey);
+        			return new MultiPartModel(shared, blockState);
+        		}

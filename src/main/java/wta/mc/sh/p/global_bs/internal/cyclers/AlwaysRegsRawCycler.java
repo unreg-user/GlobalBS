@@ -6,13 +6,13 @@ import wta.mc.sh.p.global_bs.mixins.clazzes.StateHolderWithNState;
 
 import java.util.List;
 
-public class RawAllRegCycler<O, S extends StateHolder<O, S>> implements AllRegCyclerI<O, S> {
+public class AlwaysRegsRawCycler<O, S extends StateHolder<O, S>> implements AlwaysRegsCyclerI<O, S> {
 	private final Property<?>[] properties;
 	private final List<Comparable<?>>[] possibleValues;
 	private final Comparable<?>[] values;
 	private final short[] stateList;
 
-	public RawAllRegCycler(Property<?>[] properties, Comparable<?>[] values, List<Comparable<?>>[] possibleValues) {
+	public AlwaysRegsRawCycler(Property<?>[] properties, Comparable<?>[] values, List<Comparable<?>>[] possibleValues) {
 		this.properties = properties;
 		this.values = values;
 		this.possibleValues = possibleValues;
