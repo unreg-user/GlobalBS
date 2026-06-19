@@ -4,8 +4,10 @@ import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import wta.mc.sh.p.global_bs.mixins.clazzes.PredicateWithStates;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class RawStateHolder implements RawStateHolderI {
 	final @NotNull Property<?> @NotNull [] properties;
@@ -31,6 +33,21 @@ public class RawStateHolder implements RawStateHolderI {
 			}
 		}
 		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Predicate<StateHolder<?, ?>> rawIsStatesFor() {
+		Predicate<StateHolder<?, ?>> predicate = (Predicate<StateHolder<?,?>>) PredicateWithStates.TRUE;
+		if (values == null) return predicate;
+
+		var size = properties.length;
+		for (int i = 0; i < size; i++) {
+			var pred = predicate;
+			var prop = properties[i];
+			var val = values[i];
+			predicate = holder -> holder.getValue(prop) == val && pred.test(holder);
+		}
+		return predicate;
 	}
 
 	public RawStateHolder copy() {

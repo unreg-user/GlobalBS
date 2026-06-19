@@ -1,5 +1,6 @@
 package wta.mc.sh.p.global_bs.mixins.mixin.globalBSPart;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.level.BlockGetter;
@@ -8,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,10 +21,9 @@ import wta.mc.sh.p.global_bs.customPart.DirectionCMath;
 @Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class BlockStateBaseMixin extends StateHolder<Block, BlockState> implements TypedInstance<Block> {
 	@Inject(
-		  method = "getCollisionShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;",
-		  at = @At("RETURN"),
-		  cancellable = true)
-	public void getCollisionShapeFix(BlockGetter level, BlockPos pos, CallbackInfoReturnable<VoxelShape> cir){
+		  method = "getShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;",
+		  at = @At("RETURN"), cancellable = true)
+	public void getCollisionShapeFix(BlockGetter level, BlockPos pos, CollisionContext context, CallbackInfoReturnable<VoxelShape> cir){
 		cir.setReturnValue(Shapes.rotate(cir.getReturnValue(), DirectionCMath.getRotate2DirInfoForState(this).getOctahedral()));
 	}
 

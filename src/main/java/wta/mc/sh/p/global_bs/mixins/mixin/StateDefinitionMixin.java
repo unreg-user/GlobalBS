@@ -15,9 +15,9 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import wta.mc.sh.p.global_bs.customPart.CustomPart;
-import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry;
 import wta.mc.sh.p.global_bs.mixins.intefaces.HasUnregetPropsFI;
 import wta.mc.sh.p.global_bs.mixins.intefaces.HasUnregistryFI;
+import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -119,8 +119,8 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 		return new AlwaysRegsCycler<>(alwaysRegs, state);
 	}
 
-	public AlwaysRegsRawCycler<O, S> getAlwaysRegsRawCycler(RawStateHolder rawHolder) {
-		return new AlwaysRegsRawCycler<>(rawHolder.getProperties(), rawHolder.getValues(), rawHolder.computePossibleValues());
+	public AlwaysRegsRawCycler<O, S> getAlwaysRegsRawCycler(RawStateHolder rawHolder, O owner) {
+		return new AlwaysRegsRawCycler<>(rawHolder.getProperties(), rawHolder.getValues(), rawHolder.computePossibleValues(), owner);
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -133,12 +133,16 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 
 	@ApiStatus.Internal
 	public void initPostCustomsInitDataLocal() {
-		SeparatedRawStateHolder needRawDefaultsValues;
+		RawStateHolder needRawDefaultsValues;
 		{
 			var properties = alwaysRegs.toArray(count -> new Property<?>[count]);
 			@SuppressWarnings("unchecked")
-			var possibleValues = (List<Comparable<?>>[]) alwaysRegs.stream().map(prop -> prop.getAllValues().toList()).toArray(count -> new List<?>[count]);
-			needRawDefaultsValues = new SeparatedRawStateHolder(new RawStateHolder(properties, null, possibleValues), null);
+			var possibleValues = (List<Comparable<?>>[]) alwaysRegs.stream().map(Property::getPossibleValues).toArray(count -> new List<?>[count]);
+			var defaults = new Comparable<?>[properties.length];
+			for (int i = 0; i < properties.length; i++) {
+				defaults[i] = defaultsAlwaysRegs.get(properties[i]);
+			}
+			needRawDefaultsValues = new RawStateHolder(properties, defaults, possibleValues);
 		}
 		postCustomsInitData = new PostInitCustomsData(needRawDefaultsValues);
 	}
@@ -218,7 +222,7 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 	private record FastGetterInfo<O, S extends StateHolder<O, S>>(Predicate<Object> predicate, PropertyUnregistry<O, S> unregistry) {
 	}
 
-	public record PostInitCustomsData(SeparatedRawStateHolder needRawDefaultsValues) {
+	public record PostInitCustomsData(RawStateHolder needRawDefaultsValues) {
 	}
 
 	@ApiStatus.Internal

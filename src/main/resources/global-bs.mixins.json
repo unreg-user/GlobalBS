@@ -17,7 +17,10 @@
   "client": [
     "BakersMixin$MultipartUnbakedMixin",
     "BakersMixin$SimpleInstantiateMixin",
-    "BSParserFixers$Multipart1ConditionFixer",
+    "BSParserFixers$Multipart1ConditionMixin",
+    "BSParserFixers$Multipart1ConditionMixin$TermsMixin",
+    "BSParserFixers$MultipartNConditionMixin",
+    "BSParserFixers$SelectorMixin",
     "BSParserFixers$Variant1ConditionFixer"
   ],
   "mixinextras": {

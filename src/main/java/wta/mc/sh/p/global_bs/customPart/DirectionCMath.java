@@ -7,14 +7,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.mojang.math.Quadrant.*;
-import static com.mojang.math.Quadrant.R270;
 
 public class DirectionCMath {
 	static final RotateByQuadrants[][] GET_RBQ_FOR_CACHE;

@@ -5,11 +5,11 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.SingleVariant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.block.dispatch.WeightedVariants;
-import net.minecraft.client.renderer.block.dispatch.multipart.MultiPartModel;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateHolder;
 import org.jetbrains.annotations.ApiStatus;
 import wta.mc.sh.p.global_bs.internal.MFHelper;
 
@@ -24,41 +24,23 @@ public class BlockPropertyUnreg extends PropertyUnregistry<Block, BlockState> {
 		modelHandlers.add(handler);
 	}
 
-	@FunctionalInterface
-	public interface BSMUnbakedHandler {
-		BlockStateModel.Unbaked handle(BlockStateModel.Unbaked source, BlockState sourceState, BlockState newState);
-
-		static BSMUnbakedHandler fromVariant(BSModelHandler.VariantHandler handler) {
-			return (source, sourceState, newState) -> InterfacePrivate.fromVariantFunc(handler, source, sourceState, newState);
-		}
-	}
-
-	public interface BSModelHandler extends BSMUnbakedHandler {
-		MultiPartModel.Unbaked handle(MultiPartModel.Unbaked source, BlockState sourceState, BlockState newState);
-
+	public interface BSModelHandler {
+		//MultiPartModel.Unbaked handle(MultiPartModel.Unbaked source, StateHolder<Block, BlockState> sourceState, StateHolder<Block, BlockState> newState);
+		BlockStateModel.Unbaked handle(BlockStateModel.Unbaked source, StateHolder<Block, BlockState> sourceState, StateHolder<Block, BlockState> newState);
 
 		@FunctionalInterface
 		interface VariantHandler {
-			Variant handle(Variant variant, BlockState sourceState, BlockState newState);
+			Variant handle(Variant variant, StateHolder<Block, BlockState> sourceState, StateHolder<Block, BlockState> newState);
 		}
 
-		record FromBSMUnbaked(BSMUnbakedHandler handler) implements BSModelHandler {
-
-			@Override
-			public BlockStateModel.Unbaked handle(BlockStateModel.Unbaked source, BlockState sourceState, BlockState newState) {
-				return handler.handle(source, sourceState, newState);
-			}
-
-			@Override
-			public MultiPartModel.Unbaked handle(MultiPartModel.Unbaked source, BlockState sourceState, BlockState newState) {
-				return null;
-			}
+		static BSModelHandler fromVariant(BSModelHandler.VariantHandler handler) {
+			return (source, sourceState, newState) -> InterfacePrivate.fromVariantFunc(handler, source, sourceState, newState);
 		}
 	}
 
 	private interface InterfacePrivate {
 		@SuppressWarnings("UnstableApiUsage")
-		static BlockStateModel.Unbaked fromVariantFunc(BSModelHandler.VariantHandler handler, BlockStateModel.Unbaked source, BlockState sourceState, BlockState newState) {
+		static BlockStateModel.Unbaked fromVariantFunc(BSModelHandler.VariantHandler handler, BlockStateModel.Unbaked source, StateHolder<Block, BlockState> sourceState, StateHolder<Block, BlockState> newState) {
 			switch (source) {
 				case SingleVariant.Unbaked(Variant variant) -> {
 					return new SingleVariant.Unbaked(handler.handle(variant, sourceState, newState));

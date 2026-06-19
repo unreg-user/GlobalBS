@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import wta.mc.sh.p.global_bs.mixins.clazzes.PredicateWithStates;
 import wta.mc.sh.p.global_bs.mixins.clazzes.StateHolderWithNState;
 import wta.mc.sh.p.global_bs.unregistries.PropUnregistries;
 
@@ -56,7 +57,7 @@ public class BakersMixin {
 									  for (var handler : modelHandlers) {
 										  hadledUnbaked = handler.handle(hadledUnbaked, state, cycledState);
 									  }
-									  output.accept(cycledState, hadledUnbaked.asRoot());
+									  output.accept((BlockState) cycledState, hadledUnbaked.asRoot());
 								  }
 							  }
 						  }
@@ -68,6 +69,7 @@ public class BakersMixin {
 			);
 		}
 	}
+
 	@Mixin(MultiPartModel.Unbaked.class)
 	public static class MultipartUnbakedMixin {
 		@ModifyVariable(
@@ -78,20 +80,37 @@ public class BakersMixin {
 			var unregistry = PropUnregistries.BLOCK_UNREG;
 			var modelHandlers = unregistry.modelHandlers;
 
-			List<MultiPartModel.Selector<BlockStateModel.Unbaked>> list = new ArrayList<>(selectors.size());
+			List<MultiPartModel.Selector<BlockStateModel.Unbaked>> list = new ArrayList<>(selectors.size() * unregistry.alwaysRegsVariantsCount);
 			for (var selector : selectors) {
-				var cycler = unregistry.getAlwaysRegsCycler(new StateHolderWithNState<>(unregistry.));
-				var count = unregistry.alwaysRegsVariantsCount;
-				for (int i = 0; i < count; i++) {
-					var cycledState = cycler.cycle();
-					BlockStateModel.Unbaked hadledUnbaked = model;
-					for (var handler : modelHandlers) {
-						hadledUnbaked = handler.handle(hadledUnbaked, state, cycledState);
+				var condition = selector.condition();
+				if (condition instanceof PredicateWithStates<?, ?>) {
+					var predicate = (PredicateWithStates<Block, BlockState>) condition;
+					var rawPredicate = predicate.rawPredicate();
+					var rawState = predicate.rawHolder();
+					var owner = predicate.owner();
+
+					var fakeState = new StateHolderWithNState<Block, BlockState>(owner, rawState.getProperties(), rawState.getValues());
+					var model = selector.model();
+
+					var cycler = unregistry.getAlwaysRegsRawCycler(rawState, owner);
+					var count = unregistry.alwaysRegsVariantsCount;
+					for (int i = 0; i < count; i++) {
+						var cycledState = cycler.cycle();
+						BlockStateModel.Unbaked hadledUnbaked = model;
+						for (var handler : modelHandlers) {
+							hadledUnbaked = handler.handle(hadledUnbaked, fakeState, cycledState);
+						}
+						var rawCustomPredicate = cycler.getRaw().rawIsStatesFor();
+						list.add(new MultiPartModel.Selector<>(
+							  state -> rawPredicate.test(state) && rawCustomPredicate.test(state),
+							  hadledUnbaked));
 					}
-					output.accept(cycledState, hadledUnbaked.asRoot());
+				} else if (!PredicateWithStates.isConst(condition)) {
+					BlockStateModelDispatcher.LOGGER.error("NOT PREDICATE!!!");
+					throw new IllegalStateException("condition is not PredicateWithStates");
 				}
 			}
-			return selectors;
+			return list;
 		}
 	}
 }

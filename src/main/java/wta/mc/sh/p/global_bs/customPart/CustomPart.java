@@ -3,10 +3,10 @@ package wta.mc.sh.p.global_bs.customPart;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry;
-import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry.UnregPropHandler;
 import wta.mc.sh.p.global_bs.unregistries.BlockPropertyUnreg;
 import wta.mc.sh.p.global_bs.unregistries.PropUnregistries;
+import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry;
+import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry.UnregPropHandler;
 
 public class CustomPart {
 	public static final EnumProperty<Direction> FACING_GLOBAL;

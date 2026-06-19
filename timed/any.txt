@@ -143,3 +143,24 @@
         			MultiPartModel.SharedBakedState shared = modelBakery.compute(this.sharedStateKey);
         			return new MultiPartModel(shared, blockState);
         		}
+
+		/*@WrapOperation(
+			  method = "lambda$instantiate$0",
+			  at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))
+		private static <O, S extends StateHolder<O, S>> boolean addNullIsIgnoreFix(List<Predicate<S>> instance, Object e, Operation<Boolean> original) {
+			return e != null && original.call(instance, e);
+		}
+
+		@WrapOperation(
+			  method = "instantiate(Lnet/minecraft/world/level/block/state/StateDefinition;)Ljava/util/function/Predicate;",
+			  at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;allOf(Ljava/util/List;)Ljava/util/function/Predicate;"))
+		private <O, S extends StateHolder<O, S>> Predicate<S> instantiate(
+			  List<? extends Predicate<? super S>> conditions,
+			  Operation<Predicate<S>> original,
+			  @Local(name = "definition", argsOnly = true) StateDefinition<O, S> definition
+
+		) {
+			var unregistry = ((HasUnregistryFI<?, ?>) definition).global_bs$getUnregistry();
+			return new PredicateWithStates<>(unregistry.postCustomsInitData.needRawDefaultsValues().flat(), original.call(conditions));
+		}
+		*/
