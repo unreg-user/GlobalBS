@@ -9,7 +9,6 @@ import org.jspecify.annotations.NonNull;
 import wta.mc.sh.p.global_bs.internal.cyclers.AlwaysRegsCycler;
 import wta.mc.sh.p.global_bs.internal.cyclers.AlwaysRegsRawCycler;
 import wta.mc.sh.p.global_bs.unregistries.rawStateHolder.RawStateHolder;
-import wta.mc.sh.p.global_bs.unregistries.rawStateHolder.SeparatedRawStateHolder;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -121,14 +120,6 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 
 	public AlwaysRegsRawCycler<O, S> getAlwaysRegsRawCycler(RawStateHolder rawHolder, O owner) {
 		return new AlwaysRegsRawCycler<>(rawHolder.getProperties(), rawHolder.getValues(), rawHolder.computePossibleValues(), owner);
-	}
-
-	@SuppressWarnings({"unchecked", "rawtypes"})
-	public S setAlwaysRegsToDefault(S state){
-		for (var prop : defaultsAlwaysRegs.entrySet()) {
-			state = (S) state.setValue((Property) prop.getKey(), (Comparable) prop.getValue());
-		}
-		return state;
 	}
 
 	@ApiStatus.Internal

@@ -2,8 +2,6 @@ package wta.mc.sh.p.global_bs.internal;
 
 import net.minecraft.client.renderer.block.dispatch.multipart.CombinedCondition;
 import net.minecraft.util.random.Weighted;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
 import wta.mc.sh.p.global_bs.mixins.clazzes.PredicateWithStates;
 import wta.mc.sh.p.global_bs.unregistries.PropertyUnregistry;

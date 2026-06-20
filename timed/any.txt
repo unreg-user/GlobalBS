@@ -164,3 +164,117 @@
 			return new PredicateWithStates<>(unregistry.postCustomsInitData.needRawDefaultsValues().flat(), original.call(conditions));
 		}
 		*/
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public S setAlwaysRegsToDefault(S state){
+		for (var prop : defaultsAlwaysRegs.entrySet()) {
+			state = (S) state.setValue((Property) prop.getKey(), (Comparable) prop.getValue());
+		}
+		return state;
+	}
+
+
+		@SuppressWarnings("unchecked")
+		@Inject(
+			  method = "instantiate(Lnet/minecraft/world/level/block/state/StateDefinition;Ljava/lang/String;Lnet/minecraft/client/renderer/block/dispatch/multipart/KeyValueCondition$Terms;)Ljava/util/function/Predicate;",
+			  at = @At("HEAD"),
+			  cancellable = true)
+		private static <O, S extends StateHolder<O, S>> void unregsPropsFix(
+			  StateDefinition<O, S> definition,
+			  String key,
+			  KeyValueCondition.Terms valueTest,
+			  CallbackInfoReturnable<Predicate<S>> cir) {
+			var unregetProp = ((HasUnregetPropsFI) definition).global_bs$getUnregedProps().get(key);
+			if (unregetProp != null) {
+				var unregistry = ((HasUnregistryFI<O, S>) definition).global_bs$getUnregistry();
+				Comparable<?> shouldValue = unregistry.defaultsUnregs.get(unregetProp);
+				if (!((Predicate<S>) valueTest.instantiate(definition.getOwner(), unregetProp)).test((S) (Object) new StateHolderWith1State<>(definition.getOwner(), unregetProp, shouldValue))) {
+					cir.setReturnValue((Predicate<S>) PredicateWithStates.FALSE);
+				} else {
+					cir.setReturnValue(null);
+				}
+			}
+		}
+		@SuppressWarnings({"unchecked", "DiscouragedShift"})
+		@Inject(
+			  method = "predicate",
+			  at = @At(
+					value = "NEW",
+				    target = "(Ljava/lang/String;)Ljava/lang/RuntimeException;",
+			        ordinal = 1,
+			        shift = At.Shift.BEFORE),
+			  cancellable = true)
+		private static  <O, S extends StateHolder<O, S>> void unregSkipFix(
+			  StateDefinition<O, S> stateDefinition,
+			  String properties,
+			  CallbackInfoReturnable<Predicate<StateHolder<O, S>>> cir,
+				@Local(name = "iterator") Iterator<String> iterator,
+			  @Local(name = "propertyName") String propertyName
+			  ){
+			if (iterator.hasNext()) {
+				var unregedProps = ((HasUnregetPropsFI) stateDefinition).global_bs$getUnregedProps();
+				var unregistry = ((HasUnregistryFI<?, ?>) stateDefinition).global_bs$getUnregistry();
+
+				String propertyValue = iterator.next();
+				var unregetProp = unregedProps.get(propertyName);
+				if (unregetProp != null) {
+					var shouldValue = unregistry.defaultsUnregs.get(unregetProp);
+					if (getValueHelper(unregetProp, propertyValue) != shouldValue)
+						cir.setReturnValue((Predicate<StateHolder<O, S>>) PredicateWithStates.FALSE);
+				}
+			}
+		}
+
+		/**
+		 * @author UnregUser
+		 * @reason addCustoms
+		 */
+		@SuppressWarnings("unchecked")
+		@Overwrite
+		private static <O, S extends StateHolder<O, S>> Predicate<S> instantiate(final StateDefinition<O, S> definition, final String key, final KeyValueCondition.Terms valueTest) {
+			Property<?> property = definition.getProperty(key);
+			if (property == null) {
+				var unregetProp = ((HasUnregetPropsFI) definition).global_bs$getUnregedProps().get(key);
+				if (unregetProp != null) {
+					var unregistry = ((HasUnregistryFI<O, S>) definition).global_bs$getUnregistry();
+					Comparable<?> shouldValue = unregistry.defaultsUnregs.get(unregetProp);
+					if (!((Predicate<S>) valueTest.instantiate(definition.getOwner(), unregetProp)).test((S) (Object) new StateHolderWith1State<>(definition.getOwner(), unregetProp, shouldValue))) {
+						return (Predicate<S>) PredicateWithStates.FALSE;
+					} else {
+						return null;
+					}
+				}
+				throw new IllegalArgumentException(String.format(Locale.ROOT, "Unknown property '%s' on '%s'", key, definition.getOwner()));
+			} else {
+				return valueTest.instantiate(definition.getOwner(), property);
+			}
+		}
+
+		@SuppressWarnings({"unchecked", "DiscouragedShift"})
+		@Inject(
+			  method = "predicate",
+			  at = @At(
+					value = "NEW",
+					target = "(Ljava/lang/String;)Ljava/lang/RuntimeException;",
+					ordinal = 1,
+					shift = At.Shift.BEFORE),
+			  cancellable = true)
+		private static  <O, S extends StateHolder<O, S>> void unregSkipFix(
+			  StateDefinition<O, S> stateDefinition,
+			  String properties,
+			  CallbackInfoReturnable<Predicate<StateHolder<O, S>>> cir,
+			  @Local(name = "iterator") Iterator<String> iterator,
+			  @Local(name = "propertyName") String propertyName){
+			if (iterator.hasNext()) {
+				var unregedProps = ((HasUnregetPropsFI) stateDefinition).global_bs$getUnregedProps();
+				var unregistry = ((HasUnregistryFI<?, ?>) stateDefinition).global_bs$getUnregistry();
+
+				String propertyValue = iterator.next();
+				var unregetProp = unregedProps.get(propertyName);
+				if (unregetProp != null) {
+					var shouldValue = unregistry.defaultsUnregs.get(unregetProp);
+					if (getValueHelper(unregetProp, propertyValue) != shouldValue)
+						cir.setReturnValue((Predicate<StateHolder<O, S>>) PredicateWithStates.FALSE);
+				}
+			}
+		}

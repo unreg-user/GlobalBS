@@ -3,10 +3,13 @@ package wta.mc.sh.p.global_bs.customPart;
 import com.mojang.math.OctahedralGroup;
 import com.mojang.math.Quadrant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
+import org.joml.Vector3i;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,10 +46,6 @@ public class DirectionCMath {
 		return new RotateByQuadrants(x, y, z);
 	}
 
-	public static OctahedralGroup getOctahedralFromQuadrants(Quadrant x, Quadrant y, Quadrant z){
-		return x.rotationX.compose(y.rotationY).compose(z.rotationZ);
-	}
-
 	public static Rotate2DirInfo getRotate2DirInfo(Direction direction, Direction horizontal){
 		return new Rotate2DirInfo(direction.get3DDataValue(), horizontal.get2DDataValue());
 	}
@@ -55,13 +54,21 @@ public class DirectionCMath {
 		return new Rotate2DirInfo(state.getValue(CustomPart.FACING_GLOBAL).get3DDataValue(), state.getValue(CustomPart.HORIZONTAL_FACING_GLOBAL).get2DDataValue());
 	}
 
+	public static Vec3i toVec3i(Vector3i vector) {
+		return new Vec3i(vector.x, vector.y, vector.z);
+	}
+
+	public static BlockPos toBlockPos(Vector3i vector) {
+		return new BlockPos(vector.x, vector.y, vector.z);
+	}
+
 	static {
 		{
 			var map = new HashMap<OctahedralGroup, RotateByQuadrants>();
 			for (var x : Quadrant.values()) {
 				for (var y : Quadrant.values()) {
 					for (var z : Quadrant.values()) {
-						map.put(getOctahedralFromQuadrants(x, y, z), new RotateByQuadrants(x, y, z));
+						map.put(Quadrant.fromXYZAngles(x, y, z), new RotateByQuadrants(x, y, z));
 					}
 				}
 			}
@@ -85,9 +92,9 @@ public class DirectionCMath {
 	public record Rotate2DirInfo(int dir, int hor) {
 		public Variant apply(Variant variant) {
 			var state = variant.modelState();
-			var origOctahedral = DirectionCMath.getOctahedralFromQuadrants(state.x(), state.y(), state.z());
+			var origOctahedral = Quadrant.fromXYZAngles(state.x(), state.y(), state.z());
 			var customOctahedral = DirectionCMath.GET_OCTAHEDRAL_FOR_CACHE[dir][hor];
-			var resultRBQ = DirectionCMath.GET_RBQ_BY_OCTAHEDRAL_CACHE.get(origOctahedral.compose(customOctahedral));
+			var resultRBQ = DirectionCMath.GET_RBQ_BY_OCTAHEDRAL_CACHE.get(customOctahedral.compose(origOctahedral));
 
 			return variant.withState(new Variant.SimpleModelState(
 				  resultRBQ.x,
@@ -95,6 +102,10 @@ public class DirectionCMath {
 				  resultRBQ.z,
 				  state.uvLock()
 			));
+		}
+
+		public Vector3i rotate(Vector3i source) {
+			return getOctahedral().rotate(source);
 		}
 
 		public RotateByQuadrants getRBQ(){
@@ -108,7 +119,7 @@ public class DirectionCMath {
 
 	public record RotateByQuadrants(Quadrant x, Quadrant y, Quadrant z) {
 		OctahedralGroup getOctahedral(){
-			return DirectionCMath.getOctahedralFromQuadrants(x, y, z);
+			return Quadrant.fromXYZAngles(x, y, z);
 		}
 	}
 }

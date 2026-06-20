@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "wta.mc.sh.p.global_bs.customPart.mixins.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "BlockStateBaseMixin",
+    "BlockStateBaseMixin$BlockPlaceContextMixin",
+    "BlockStateBaseMixin$VoxelShapeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "mixinextras": {
+    "minVersion": "0.5.4"
+  }
+}

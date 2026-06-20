@@ -69,14 +69,6 @@ public class BSParserFixers {
 			return new PredicateWithStates<>(unregistry.postCustomsInitData.needRawDefaultsValues(), Util.allOf(predicates), definition.getOwner());
 		}
 
-		@Inject(
-			  method = "<clinit>",
-			  at = @At("TAIL")
-		)
-		private static void clinit(CallbackInfo ci) {
-			PropertyUnregistry.initPostCustomsInitData();
-		}
-
 		@SuppressWarnings("unchecked")
 		@Inject(
 			  method = "instantiate(Lnet/minecraft/world/level/block/state/StateDefinition;Ljava/lang/String;Lnet/minecraft/client/renderer/block/dispatch/multipart/KeyValueCondition$Terms;)Ljava/util/function/Predicate;",
@@ -99,16 +91,24 @@ public class BSParserFixers {
 			}
 		}
 
+		@Inject(
+			  method = "<clinit>",
+			  at = @At("TAIL")
+		)
+		private static void clinit(CallbackInfo ci) {
+			PropertyUnregistry.initPostCustomsInitData();
+		}
+
 		@Mixin(KeyValueCondition.Terms.class)
 		public static class TermsMixin {
 			@Inject(
 				  method = "instantiate(Ljava/lang/Object;Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/util/function/Predicate;",
 				  at = @At(
 						value = "RETURN",
-					    ordinal = 0
+						ordinal = 0
 				  ),
 				  cancellable = true)
-			private <O, S extends StateHolder<O, S>, T extends Comparable<T>> void falseFix(Object owner, Property<T> property, CallbackInfoReturnable<Predicate<?>> cir){
+			private <O, S extends StateHolder<O, S>, T extends Comparable<T>> void falseFix(Object owner, Property<T> property, CallbackInfoReturnable<Predicate<?>> cir) {
 				cir.setReturnValue(PredicateWithStates.FALSE);
 			}
 
@@ -119,7 +119,7 @@ public class BSParserFixers {
 						ordinal = 1
 				  ),
 				  cancellable = true)
-			private <O, S extends StateHolder<O, S>, T extends Comparable<T>> void trueFix(Object owner, Property<T> property, CallbackInfoReturnable<Predicate<?>> cir){
+			private <O, S extends StateHolder<O, S>, T extends Comparable<T>> void trueFix(Object owner, Property<T> property, CallbackInfoReturnable<Predicate<?>> cir) {
 				cir.setReturnValue(PredicateWithStates.TRUE);
 			}
 		}
@@ -157,30 +157,35 @@ public class BSParserFixers {
 				Iterator<String> iterator = EQUAL_SPLITTER.split(keyValue).iterator();
 				if (iterator.hasNext()) {
 					String propertyName = iterator.next();
-
-					var unregetProp = unregedProps.get(propertyName);
-					Comparable<?> shouldValue;
-					if (unregetProp != null) {
-						shouldValue = unregistry.defaultsUnregs.get(unregetProp);
-					} else {
-						shouldValue = null;
-					}
-
 					Property<?> property = stateDefinition.getProperty(propertyName);
+					var isThrow = false;
 					if (iterator.hasNext()) {
 						String propertyValue = iterator.next();
-						if (shouldValue != null) {
-							if (getValueHelper(unregetProp, propertyValue) != shouldValue)
-								return (Predicate<StateHolder<O, S>>) PredicateWithStates.FALSE;
-						} else if (property != null) {
+						if (property != null) {
 							Comparable<?> value = getValueHelper(property, propertyValue);
 							if (value == null) {
 								throw new RuntimeException("Unknown value: '" + propertyValue + "' for blockstate property: '" + propertyName + "' " + property.getPossibleValues());
 							}
 
 							map.put(property, value);
+						} else {
+							var unregetProp = unregedProps.get(propertyName);
+							if (unregetProp != null) {
+								var shouldValue = unregistry.defaultsUnregs.get(unregetProp);
+								if (shouldValue != null) {
+									if (getValueHelper(unregetProp, propertyValue) != shouldValue) {
+										return (Predicate<StateHolder<O, S>>) PredicateWithStates.FALSE;
+									}
+								}
+							} else {
+								isThrow = true;
+							}
 						}
-					} else if (!propertyName.isEmpty()) {
+					} else {
+						isThrow = true;
+					}
+
+					if (!propertyName.isEmpty() && isThrow) {
 						throw new RuntimeException("Unknown blockstate property: '" + propertyName + "'");
 					}
 				}
@@ -204,7 +209,7 @@ public class BSParserFixers {
 			  method = "instantiate",
 			  at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/dispatch/multipart/CombinedCondition$Operation;apply(Ljava/util/List;)Ljava/util/function/Predicate;")
 		)
-		public <O, S extends StateHolder<O, S>> Predicate<S> operationFix(CombinedCondition.Operation instance, List<Predicate<S>> predicates){
+		public <O, S extends StateHolder<O, S>> Predicate<S> operationFix(CombinedCondition.Operation instance, List<Predicate<S>> predicates) {
 			return MFHelper.applyOperationToTerms(instance, predicates);
 		}
 	}

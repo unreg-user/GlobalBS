@@ -5,8 +5,7 @@
   "mixins": [
     "StateDefinitionMixin",
     "StateDefinitionMixin$StateDefBuilderMixin",
-    "StateDefinitionMixin$StateHolderMixin",
-    "globalBSPart.BlockStateBaseMixin"
+    "StateDefinitionMixin$StateHolderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

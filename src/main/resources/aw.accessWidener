@@ -15,3 +15,4 @@ accessible class net/minecraft/client/renderer/block/dispatch/multipart/MultiPar
 accessible method net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel <init> (Lnet/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$SharedBakedState;Lnet/minecraft/world/level/block/state/BlockState;)V
 accessible class net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$SharedBakedState
 accessible field net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$Unbaked selectors Ljava/util/List;
+accessible method net/minecraft/world/item/context/UseOnContext getHitResult ()Lnet/minecraft/world/phys/BlockHitResult;
