@@ -1,0 +1,15 @@
+{
+  "package": "wta.mc.sh.p.global_bs.customPart.mixins.plugin.plugin",
+  "required": true,
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "wta.mc.sh.p.global_bs.customPart.mixins.plugin.plugin.MyMixinPlugin",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "mixinextras": {
+    "minVersion": "0.5.4"
+  }
+}

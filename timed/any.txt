@@ -278,3 +278,117 @@
 				}
 			}
 		}
+
+	@Redirect(
+		  method = "canBeReplaced(Lnet/minecraft/world/item/context/BlockPlaceContext;)Z",
+		  at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;canBeReplaced(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/item/context/BlockPlaceContext;)Z"))
+	private boolean unoverrider0(Block instance, BlockState state, BlockPlaceContext blockPlaceContext){
+		return unoverridableCanBeReplaced(instance, state, blockPlaceContext);
+	}
+
+	@Redirect(
+		  method = "canBeReplaced(Lnet/minecraft/world/level/material/Fluid;)Z",
+		  at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;canBeReplaced(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/Fluid;)Z"))
+	private boolean unoverrider1(Block instance, BlockState state, Fluid fluid){
+		return unoverridableCanBeReplaced(state);
+	}
+
+	@Unique
+	private boolean unoverridableCanBeReplaced(Block self, final BlockState state, final BlockPlaceContext context) {
+		return state.canBeReplaced() && (context.getItemInHand().isEmpty() || !context.getItemInHand().is(self.asItem()));
+	}
+
+	@SuppressWarnings("deprecation")
+	@Unique
+	private boolean unoverridableCanBeReplaced(final BlockState state) {
+		return state.canBeReplaced() || !state.isSolid();
+	}
+
+
+	/*@Mixin(BlockPlaceContext.class)
+	public static class BlockPlaceContextMixin {
+		@ModifyVariable(
+			  method = "<init>(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/BlockHitResult;)V",
+			  at = @At("HEAD"),
+			  argsOnly = true, name = "hitResult")
+		private static BlockHitResult hitResultFix0(
+			  BlockHitResult hitResult,
+			  @Local(argsOnly = true, name = "level") Level level) {
+			var pos = hitResult.getBlockPos();
+			return new BlockHitResult(
+				  hitResult.getLocation(),
+				  hitResult.getDirection(),
+				  new BlockPosR(pos, level.getBlockState(pos)),
+				  hitResult.isInside());
+		}
+	}*/
+
+	/*public static Direction.Axis getRotatedAxis(Direction.Axis axis, BlockState state) {
+		var info = getRotate2DirInfoForState(state);
+		return info.getOctahedral().rotate(axis.getDirections()[0]).getAxis();
+	}*/
+	/*if (insn instanceof FieldInsnNode fieldInsn) {
+    								if (fieldInsn.getOpcode() == Opcodes.GETSTATIC) {
+    									if ("Lnet/minecraft/core/Direction;".equals(fieldInsn.desc)) {
+    										int activeBlockStateSlot = findActiveSlotWithType(method, insn, BLOCK_STATE_DESC);
+    										setToGetBy(insn, instructions, DIRECTION_DESC, "Direction", activeBlockStateSlot);
+    									} else if ("Lnet/minecraft/core/Direction$Axis;".equals(fieldInsn.desc)) {
+    										int activeBlockStateSlot = findActiveSlotWithType(method, insn, BLOCK_STATE_DESC);
+    										setToGetBy(insn, instructions, AXIS_DESC, "Axis", activeBlockStateSlot);
+    									}
+    								}
+    							} else {
+    								boolean isTarget = false;
+
+    								if (insn instanceof VarInsnNode varInsn && varInsn.getOpcode() == Opcodes.ALOAD) {
+    									if (isVarSlotWithType(method, insn, varInsn.var, BLOCK_POS_DESC)) {
+    										isTarget = true;
+    									}
+    								} else if (insn instanceof MethodInsnNode methodInsn) {
+    									if (methodInsn.desc.endsWith(")" + BLOCK_POS_DESC) ||
+    										  (methodInsn.getOpcode() == Opcodes.INVOKESPECIAL && BLOCK_POS_INTERNAL.equals(methodInsn.owner) && "<init>".equals(methodInsn.name))) {
+    										isTarget = true;
+    									}
+    								}
+
+    								if (isTarget) {
+    									int activeBlockStateSlot = findActiveSlotWithType(method, insn, BLOCK_STATE_DESC);
+    									setToGetBy(insn, instructions, BLOCK_POS_DESC, "BlockPos", activeBlockStateSlot);
+    								}
+    							}*/
+	/*
+	public @NonNull BlockPos cRelative(final Direction direction) {
+		var rotated = getRotated(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+		return new BlockPosR(
+			  this.getX() + rotated.x,
+			  this.getY() + rotated.y,
+			  this.getZ() + rotated.z,
+			  info);
+	}
+
+	public @NonNull BlockPos cRelative(final @NonNull Direction direction, final int steps) {
+		var rotated = getRotated(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+		return steps == 0
+			  ? this
+			  : new BlockPosR(
+			  this.getX() + rotated.x * steps,
+			  this.getY() + rotated.y * steps,
+			  this.getZ() + rotated.z * steps,
+			  info);
+	}
+
+	public @NonNull BlockPos cRelative(final Direction.@NonNull Axis axis, final int steps) {
+		if (steps == 0) {
+			return this;
+		} else {
+			int xStep = axis == Direction.Axis.X ? steps : 0;
+			int yStep = axis == Direction.Axis.Y ? steps : 0;
+			int zStep = axis == Direction.Axis.Z ? steps : 0;
+			var rotated = getRotated(xStep, yStep, zStep);
+			return new BlockPosR(
+				  this.getX() + rotated.x,
+				  this.getY() + rotated.y,
+				  this.getZ() + rotated.z,
+				  info);
+		}
+	}*/

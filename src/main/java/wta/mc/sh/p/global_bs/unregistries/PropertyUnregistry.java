@@ -184,14 +184,28 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 				  true,
 				  new UnregisteredGettingValueHandler.OfRetValue<>(value));
 		}
+
+		public static <T extends Comparable<T>> UnregPropHandler<T> ofMiddlepartReplace(Property<T> self, T value, UnregisteredValueHandlerSetter<T> setter) {
+			return new UnregPropHandler<>(
+				  self,
+				  null,
+				  value,
+				  true,
+				  new UnregisteredGettingValueHandler.OfRetValueWithSetter<>(value, setter));
+		}
 	}
 
 	// Other Handlers
-	@SuppressWarnings("unchecked")
-	public interface UnregisteredGettingValueHandler<T extends Comparable<T>> {
+	public interface UnregisteredValueHandlerGetter<T extends Comparable<T>> {
 		<O, S> T getNullableValue(StateHolder<O, S> self);
+	}
 
+	public interface UnregisteredValueHandlerSetter<T extends Comparable<T>> {
 		<O, S> S setValue(StateHolder<O, S> self, T value);
+	}
+
+	@SuppressWarnings("unchecked")
+	public interface UnregisteredGettingValueHandler<T extends Comparable<T>> extends UnregisteredValueHandlerGetter<T>, UnregisteredValueHandlerSetter<T> {
 
 		record OfRetValue<T extends Comparable<T>>(T value) implements UnregisteredGettingValueHandler<T> {
 			@Override
@@ -202,6 +216,18 @@ public class PropertyUnregistry<O, S extends StateHolder<O, S>> {
 			@Override
 			public <O, S> S setValue(StateHolder<O, S> self, T value) {
 				return (S) self;
+			}
+		}
+
+		record OfRetValueWithSetter<T extends Comparable<T>>(T value, UnregisteredValueHandlerSetter<T> setter) implements UnregisteredGettingValueHandler<T> {
+			@Override
+			public <O, S> T getNullableValue(StateHolder<O, S> self) {
+				return value;
+			}
+
+			@Override
+			public <O, S> S setValue(StateHolder<O, S> self, T value) {
+				return setter.setValue(self, value);
 			}
 		}
 	}

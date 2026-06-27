@@ -21,6 +21,7 @@
 	},
 	"mixins": [
 		"global-bs.mixins.json",
+		"custom-part-global-bs-plugin.mixins.json",
 		"custom-part-global-bs.mixins.json"
 	],
 	"depends": {

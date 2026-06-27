@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.state.StateHolder;
 import org.joml.Vector3i;
 import org.jspecify.annotations.NonNull;
 import wta.mc.sh.p.global_bs.customPart.DirectionCMath;
+import wta.mc.sh.p.global_bs.customPart.mixins.interfaces.DirectionFI;
 
 public class BlockPosR extends BlockPos {
 	private final DirectionCMath.Rotate2DirInfo info;
@@ -48,48 +49,9 @@ public class BlockPosR extends BlockPos {
 			return scale == 0 ? new BlockPosR(0, 0, 0, info) :
 				  new BlockPosR(
 						this.getX() * scale,
-					    this.getY() * scale,
-					    this.getZ() * scale,
-					    info);
-		}
-	}
-
-	@Override
-	public @NonNull BlockPos relative(final Direction direction) {
-		var rotated = getRotated(direction.getStepX(), direction.getStepY(), direction.getStepZ());
-		return new BlockPosR(
-			  this.getX() + rotated.x,
-			  this.getY() + rotated.y,
-			  this.getZ() + rotated.z,
-			  info);
-	}
-
-	@Override
-	public @NonNull BlockPos relative(final @NonNull Direction direction, final int steps) {
-		var rotated = getRotated(direction.getStepX(), direction.getStepY(), direction.getStepZ());
-		return steps == 0
-			  ? this
-			  : new BlockPosR(
-			        this.getX() + rotated.x * steps,
-			        this.getY() + rotated.y * steps,
-			        this.getZ() + rotated.z * steps,
-			        info);
-	}
-
-	@Override
-	public @NonNull BlockPos relative(final Direction.@NonNull Axis axis, final int steps) {
-		if (steps == 0) {
-			return this;
-		} else {
-			int xStep = axis == Direction.Axis.X ? steps : 0;
-			int yStep = axis == Direction.Axis.Y ? steps : 0;
-			int zStep = axis == Direction.Axis.Z ? steps : 0;
-			var rotated = getRotated(xStep, yStep, zStep);
-			return new BlockPosR(
-				  this.getX() + rotated.x,
-				  this.getY() + rotated.y,
-				  this.getZ() + rotated.z,
-				  info);
+						this.getY() * scale,
+						this.getZ() * scale,
+						info);
 		}
 	}
 
@@ -105,18 +67,52 @@ public class BlockPosR extends BlockPos {
 
 	@Override
 	public @NonNull BlockPos cross(final Vec3i upVector) {
-		var rotated = getRotated(upVector.getX(), upVector.getY(), upVector.getZ());
 		return new BlockPosR(
-			  this.getY() * rotated.z - this.getZ() * rotated.y,
-			  this.getZ() * rotated.x - this.getX() * rotated.z,
-			  this.getX() * rotated.y - this.getY() * rotated.x,
+			  this.getY() * upVector.getZ() - this.getZ() * upVector.getY(),
+			  this.getZ() * upVector.getX() - this.getX() * upVector.getZ(),
+			  this.getX() * upVector.getY() - this.getY() * upVector.getX(),
 			  info
 		);
 	}
 
+
 	@Override
-	public @NonNull BlockPos atY(final int y) {
-		return new BlockPosR(this.getX(), y, this.getZ(), info);
+	public @NonNull BlockPos relative(final @NonNull Direction direction) {
+		var rotated = ((DirectionFI) (Object) direction).global_bs$isRotated() ?  new Vector3i(direction.getStepX(), direction.getStepY(), direction.getStepZ()) : getRotated(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+		return new BlockPosR(
+			  this.getX() + rotated.x,
+			  this.getY() + rotated.y,
+			  this.getZ() + rotated.z,
+			  info);
+	}
+
+	@Override
+	public @NonNull BlockPos relative(final @NonNull Direction direction, final int steps) {
+		var rotated = ((DirectionFI) (Object) direction).global_bs$isRotated() ?  new Vector3i(direction.getStepX(), direction.getStepY(), direction.getStepZ()) : getRotated(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+		return steps == 0
+			  ? this
+			  : new BlockPosR(
+			  this.getX() + rotated.x * steps,
+			  this.getY() + rotated.y * steps,
+			  this.getZ() + rotated.z * steps,
+			  info);
+	}
+
+	@Override
+	public @NonNull BlockPos relative(final Direction.@NonNull Axis axis, final int steps) {
+		if (steps == 0) {
+			return this;
+		} else {
+			int xStep = axis == Direction.Axis.X ? steps : 0;
+			int yStep = axis == Direction.Axis.Y ? steps : 0;
+			int zStep = axis == Direction.Axis.Z ? steps : 0;
+			var rotated = new Vector3i(xStep, yStep, zStep);
+			return new BlockPosR(
+				  this.getX() + rotated.x,
+				  this.getY() + rotated.y,
+				  this.getZ() + rotated.z,
+				  info);
+		}
 	}
 
 	// API

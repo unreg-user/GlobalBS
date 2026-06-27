@@ -3,9 +3,13 @@
   "package": "wta.mc.sh.p.global_bs.customPart.mixins.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "BlockStateBaseMixin",
-    "BlockStateBaseMixin$BlockPlaceContextMixin",
-    "BlockStateBaseMixin$VoxelShapeMixin"
+    "BlockItemMixin",
+    "BlockStateBaseMixinShapePart",
+    "BlockStateBaseMixinShapePart$VoxelShapeMixin",
+    "BoneMealItemMixin",
+    "DirectionMixin",
+    "LevelsMixins$LevelMixin",
+    "PlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -15,5 +19,9 @@
   },
   "mixinextras": {
     "minVersion": "0.5.4"
-  }
+  },
+  "client": [
+    "BlockEntityRenderDispatcherMixin",
+    "GuiMixin"
+  ]
 }

@@ -1,18 +1,21 @@
 accessWidener v2 official
 
-accessible method net/minecraft/world/level/block/state/StateDefinition$Builder validateProperty (Lnet/minecraft/world/level/block/state/properties/Property;)V
-accessible field net/minecraft/world/level/block/state/StateDefinition$Builder properties Ljava/util/Map;
-accessible method net/minecraft/world/level/block/state/StateHolder valueIndex (Lnet/minecraft/world/level/block/state/properties/Property;)I
-extendable method net/minecraft/world/level/block/state/StateHolder valueIndex (Lnet/minecraft/world/level/block/state/properties/Property;)I
-accessible field net/minecraft/world/level/block/state/StateHolder propertyKeys [Lnet/minecraft/world/level/block/state/properties/Property;
-accessible method net/minecraft/world/level/block/state/StateHolder getNullableValue (Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;
-extendable method net/minecraft/world/level/block/state/StateHolder getNullableValue (Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;
-accessible field net/minecraft/world/level/block/state/StateDefinition$Builder owner Ljava/lang/Object;
-extendable class net/minecraft/world/level/block/state/properties/EnumProperty
+accessible class net/fabricmc/loader/impl/launch/knot/KnotClassLoader
+accessible class net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$SharedBakedState
 accessible method net/minecraft/world/level/block/state/properties/EnumProperty <init> (Ljava/lang/String;Ljava/lang/Class;Ljava/util/List;)V
-accessible field net/minecraft/client/renderer/block/dispatch/BlockStateModelDispatcher LOGGER Lorg/slf4j/Logger;
-accessible class net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$SharedBakedState
 accessible method net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel <init> (Lnet/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$SharedBakedState;Lnet/minecraft/world/level/block/state/BlockState;)V
-accessible class net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$SharedBakedState
-accessible field net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$Unbaked selectors Ljava/util/List;
+accessible method net/minecraft/world/level/block/state/StateDefinition$Builder validateProperty (Lnet/minecraft/world/level/block/state/properties/Property;)V
+accessible method net/minecraft/world/level/block/state/StateHolder valueIndex (Lnet/minecraft/world/level/block/state/properties/Property;)I
+accessible method net/minecraft/world/level/block/state/StateHolder getNullableValue (Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;
 accessible method net/minecraft/world/item/context/UseOnContext getHitResult ()Lnet/minecraft/world/phys/BlockHitResult;
+accessible field net/minecraft/client/renderer/block/dispatch/multipart/MultiPartModel$Unbaked selectors Ljava/util/List;
+accessible field net/minecraft/world/level/block/state/StateDefinition$Builder owner Ljava/lang/Object;
+accessible field net/minecraft/client/renderer/block/dispatch/BlockStateModelDispatcher LOGGER Lorg/slf4j/Logger;
+accessible field net/minecraft/world/level/block/state/StateHolder propertyKeys [Lnet/minecraft/world/level/block/state/properties/Property;
+accessible field net/minecraft/world/level/block/state/StateDefinition$Builder properties Ljava/util/Map;
+accessible field net/minecraft/core/Direction oppositeIndex I
+accessible field net/minecraft/client/renderer/blockentity/state/BlockEntityRenderState blockState Lnet/minecraft/world/level/block/state/BlockState;
+
+extendable class net/minecraft/world/level/block/state/properties/EnumProperty
+extendable method net/minecraft/world/level/block/state/StateHolder getNullableValue (Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;
+extendable method net/minecraft/world/level/block/state/StateHolder valueIndex (Lnet/minecraft/world/level/block/state/properties/Property;)I
